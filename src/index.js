@@ -2,28 +2,35 @@ import './css/styles.css';
 import Notiflix from 'notiflix'
 var debounce = require('lodash.debounce');
 
+import { fetchCountries, } from './fetchCountries';
+
 const DEBOUNCE_DELAY = 300;
 
 const inputFeild = document.querySelector('#search-box');
 const countryList = document.querySelector('.country-list');
 const countryInfo = document.querySelector('.country-info');
 
-
-function fetchCountries(evt) {
+function onFormTyping(evt) {
+    const name = evt.target.value;
     if (evt.target.value) {
-        const name = evt.target.value;
-        fetch(`https://restcountries.com/v3.1/name/${name}?fields=name,capital,population,flags,languages`)
-    .then(response => {
-        return response.json();
-    }).then(createCountryMarcup).catch
+    fetchCountries(name.trim()).then(createCountryMarcup).catch(() => {
+        countryList.innerHTML = '';
+        countryInfo.innerHTML = '';
+    })
+    } else if (evt.target.value === "") {
+        countryList.innerHTML = '';
+        countryInfo.innerHTML = '';
     }
 };
 
 function createCountryMarcup(countries) {
     if (countries.length >= 10) {
-        Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
+        countryList.innerHTML = '';
+        countryInfo.innerHTML = '';
+        Notiflix.Notify.info('Too many matches found. Please enter a more specific name.',
+        {timeout: 1000});
         return
-    }else if (countries.length > 1) {
+    } else if (countries.length > 1) {
         countryList.innerHTML = '';
         countryInfo.innerHTML = '';
         countryList.insertAdjacentHTML("beforeend", countriesListTpl(countries));
@@ -36,30 +43,27 @@ function createCountryMarcup(countries) {
 
 function countryInfoTpl(countries) {
     const marcup = countries.map((country) => {
-     return `<img src="${country.flags.svg}" width="30">
-            <hi>${country.name.common}</h1>
-            <p>Capital: ${country.capital}</p>
-            <p>Population: ${country.population}</p>
-            <p>Population: ${Object.values(country.languages)}</p>` 
+        return `<div class="country-label-box">
+                    <img src="${country.flags.svg}" width="50" height="70">
+                    <hi class="country-info-header">${country.name.common}</h1>
+                </div>
+                <ul class="country-info-list">
+                    <li class="country-info-text"><span class="text-bold">Capital</span>: ${country.capital}</li>
+                    <li class="country-info-text"><span class="text-bold">Population</span>: ${country.population}</li>
+                    <li class="country-info-text"><span class="text-bold">Population</span>: ${Object.values(country.languages)}</li>
+                </ul>` 
     }).join("");
     return marcup;
-    // const marcup = `<img src="${country.flags.svg}" width="30">
-    //     <hi>${country.name.common}</h1>
-    //     <p>Capital: ${country.capital}</p>
-    //     <p>Population: ${country.population}</p>
-    //     <p>Population: ${country.languages.value}</p>`
-    // return marcup;
 };
 
 function countriesListTpl(countries) {
     const marcup = countries.map((country) => {
-     return `<li>
-        <img src="${country.flags.svg}" width="30">
-        <p>${country.name.common}</p>
+     return `<li class="country-list-el">
+        <img src="${country.flags.svg}" height="30" width="40">
+        <p class="country-list-text">${country.name.common}</p>
         </li>` 
     }).join("");
     return marcup;
 };
 
-inputFeild.addEventListener('input', debounce(fetchCountries, DEBOUNCE_DELAY));
-
+inputFeild.addEventListener('input', debounce(onFormTyping, DEBOUNCE_DELAY));
