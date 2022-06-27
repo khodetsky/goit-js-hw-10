@@ -44,7 +44,7 @@ function createCountryMarcup(countries) {
 function countryInfoTpl(countries) {
     const marcup = countries.map((country) => {
         return `<div class="country-label-box">
-                    <img src="${country.flags.svg}" width="50" height="70">
+                    <img src="${country.flags.svg}" width="70" height="50">
                     <hi class="country-info-header">${country.name.common}</h1>
                 </div>
                 <ul class="country-info-list">
